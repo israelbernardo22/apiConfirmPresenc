@@ -57,7 +57,7 @@ app.post('/confirmar', async (req, res) => {
 // Rota para obter a lista de convidados
 app.get('/convidados', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM convidados');
+        const result = await pool.query('SELECT * FROM "public"."convidados" LIMIT 100');
         res.json(result.rows);
     } catch (error) {
         console.error('Erro ao buscar convidados:', error);
