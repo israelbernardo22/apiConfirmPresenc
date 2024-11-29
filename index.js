@@ -5,6 +5,8 @@ require('dotenv').config(); // Carrega as variáveis de ambiente do arquivo .env
 
 const app = express();
 
+app.use(cors(corsOptions));
+
 // Configuração do CORS
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production' 
@@ -13,8 +15,6 @@ const corsOptions = {
     methods: ['GET', 'POST', 'DELETE'],
     allowedHeaders: ['Content-Type']
 };
-
-app.use(cors(corsOptions));
 
 // Middleware para interpretar o corpo da requisição
 app.use(express.urlencoded({ extended: true }));
