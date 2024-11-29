@@ -1,19 +1,24 @@
 const express = require('express');
 const { Pool } = require('pg');
-const path = require('path');
 const cors = require('cors');
-const app = express();
 require('dotenv').config(); // Carrega as variáveis de ambiente do arquivo .env
 
+const app = express();
 
-app.use(cors({ origin: 'https://confirmapresencatheo-i6pu8xbd0-israelbernardo22s-projects.vercel.app' }));
+// Configuração do CORS
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'production' 
+        ? 'https://confirmapresencatheo-i6pu8xbd0-israelbernardo22s-projects.vercel.app' // URL do frontend em produção
+        : 'http://localhost:3000', // Para desenvolvimento local
+    methods: ['GET', 'POST', 'DELETE'],
+    allowedHeaders: ['Content-Type']
+};
 
+app.use(cors(corsOptions));
 
-
-
-
-// Servir arquivos estáticos da pasta 'public'
-app.use(express.static(path.join(__dirname, 'public')));
+// Middleware para interpretar o corpo da requisição
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // Configuração da conexão com o ElephantSQL
 const pool = new Pool({
@@ -22,21 +27,6 @@ const pool = new Pool({
         rejectUnauthorized: false, // Necessário para conexões com bancos como o ElephantSQL
     },
 });
-
-
-
-// Middleware para interpretar o corpo da requisição
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-// Servir o arquivo HTML principal
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-app.get('/lista-convidados', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'ListaConvidados.html'));
-});
-
 
 // Rota para salvar os dados do formulário no banco de dados
 app.post('/confirmar', async (req, res) => {
@@ -60,6 +50,7 @@ app.post('/confirmar', async (req, res) => {
     }
 });
 
+// Rota para obter a lista de convidados
 app.get('/convidados', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM convidados');
@@ -70,6 +61,7 @@ app.get('/convidados', async (req, res) => {
     }
 });
 
+// Rota para deletar um convidado pelo ID
 app.delete('/convidados/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -81,11 +73,9 @@ app.delete('/convidados/:id', async (req, res) => {
     }
 });
 
-
 // Inicializar o servidor
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
-
