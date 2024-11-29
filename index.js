@@ -1,35 +1,36 @@
-const express = require("express");
-const { Client } = require("pg");
-const cors = require("cors");
-const bodyparser = require("body-parser");
+const express = require('express');
+const { Pool } = require('pg');
+const cors = require('cors');
+require('dotenv').config(); // Carrega as variáveis de ambiente do arquivo .env
 
 const app = express();
+
+app.use(cors(corsOptions));
+
+// Configuração do CORS
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'production' 
+        ? 'https://confirmapresencatheo-i6pu8xbd0-israelbernardo22s-projects.vercel.app' // URL do frontend em produção
+        : 'http://localhost:3000', // Para desenvolvimento local
+    methods: ['GET', 'POST', 'DELETE'],
+    allowedHeaders: ['Content-Type']
+};
+
+// Middleware para interpretar o corpo da requisição
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors());
-app.use(bodyparser.json());
 
-// Configuração de conexão com o ElephantSQL
-const conString = "postgres://cbytzror:F8S4hjULM7PlNl0T1HreFZiX-ESAWNyx@kesavan.db.elephantsql.com/cbytzror"; // Atualize com sua URL
-const client = new Client(conString);
-
-client.connect((err) => {
-  if (err) {
-    console.error("Não foi possível conectar ao banco.", err);
-    return;
-  }
-  client.query("SELECT NOW()", (err, result) => {
-    if (err) {
-      console.error("Erro ao executar a query.", err);
-      return;
-    }
-    console.log("Conexão estabelecida:", result.rows[0]);
-  });
+// Configuração da conexão com o ElephantSQL
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL, // Usando a variável DATABASE_URL
+    ssl: {
+        rejectUnauthorized: false, // Necessário para conexões com bancos como o ElephantSQL
+    },
 });
 
-// Rota raiz para verificar disponibilidade
 app.get("/", (req, res) => {
-  console.log("Servidor disponível.");
-  res.send("Ok – Servidor disponível.");
+    console.log("Servidor disponivel.");
+    res.send("OK - Servidor Disponivel.");
 });
 
 // Rota para salvar os dados do formulário no banco de dados
@@ -57,7 +58,7 @@ app.post('/confirmar', async (req, res) => {
 // Rota para obter a lista de convidados
 app.get('/convidados', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM "public"."convidados" LIMIT 100');
+        const result = await pool.query('SELECT * FROM convidados');
         res.json(result.rows);
     } catch (error) {
         console.error('Erro ao buscar convidados:', error);
