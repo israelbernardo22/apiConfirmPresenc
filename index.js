@@ -62,7 +62,7 @@ app.get("/convidados/:id", (req, res) => {
   }
 });
 
-app.delete('/Delconvidados/:id', async (req, res) => {
+app.delete('/convidados/:id', async (req, res) => {
   const { id } = req.params;
   try {
       await client.query('DELETE FROM convidados WHERE id = $1', [id]);
