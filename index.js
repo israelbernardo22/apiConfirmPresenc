@@ -31,7 +31,48 @@ app.listen(config.port, () =>
   console.log("Servidor funcionando na porta " + config.port)
 );
 
-// Rota para salvar os dados do formulário no banco de dados
+app.get("/convidados", (req, res) => {
+  try {
+    client.query("SELECT * FROM convidados", function (err, result) {
+      if (err) {
+        return console.error("Erro ao executar a qry de SELECT", err);
+      }
+      res.json(result.rows);
+      console.log("Chamou get convidados");
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.get("/convidados", (req, res) => {
+  try {
+    client.query(
+      `SELECT * FROM convidados WHERE id = ${req.params.id}`,
+      function (err, result) {
+        if (err) {
+          return console.error("Erro ao buscar convidados:", err);
+        }
+        res.json(result.rows);
+        console.log("Chamou get convidados");
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.delete('/convidados/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+      await client.query('DELETE FROM convidados WHERE id = $1', [id]);
+      res.send('Convidado deletado com sucesso.');
+  } catch (error) {
+      console.error('Erro ao deletar convidado:', error);
+      res.status(500).send('Erro ao deletar convidado.');
+  }
+});
+
 app.post('/confirmar', async (req, res) => {
   const { nome, quantAdultos, quantCriancas } = req.body;
 
@@ -42,7 +83,7 @@ app.post('/confirmar', async (req, res) => {
   }
 
   try {
-      await pool.query(
+      await client.query(
           'INSERT INTO convidados (nome, quantAdultos, quantCriancas) VALUES ($1, $2, $3)',
           [nome, quantAdultos, quantCriancas]
       );
@@ -53,32 +94,4 @@ app.post('/confirmar', async (req, res) => {
   }
 });
 
-app.get('/convidados', async (req, res) => {
-  try {
-      const result = await pool.query('SELECT * FROM convidados');
-      res.json(result.rows);
-  } catch (error) {
-      console.error('Erro ao buscar convidados:', error);
-      res.status(500).send('Erro ao buscar convidados.');
-  }
-});
-
-app.delete('/convidados/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-      await pool.query('DELETE FROM convidados WHERE id = $1', [id]);
-      res.send('Convidado deletado com sucesso.');
-  } catch (error) {
-      console.error('Erro ao deletar convidado:', error);
-      res.status(500).send('Erro ao deletar convidado.');
-  }
-});
-
 module.exports = app;
-
-const port = process.env.PORT || 3000;  // Use a porta atribuída ou 3000 como fallback
-
-app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
-});
-
