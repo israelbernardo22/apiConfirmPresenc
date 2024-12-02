@@ -45,23 +45,6 @@ app.get("/convidados", (req, res) => {
   }
 });
 
-app.get("/convidados", (req, res) => {
-  try {
-    client.query(
-      `SELECT * FROM convidados WHERE id = ${req.params.id}`,
-      function (err, result) {
-        if (err) {
-          return console.error("Erro ao buscar convidados:", err);
-        }
-        res.json(result.rows);
-        console.log("Chamou get convidados");
-      }
-    );
-  } catch (error) {
-    console.log(error);
-  }
-});
-
 app.delete('/convidados/:id', async (req, res) => {
   const { id } = req.params;
   try {
