@@ -38,8 +38,25 @@ app.get("/convidados", (req, res) => {
         return console.error("Erro ao executar a qry de SELECT", err);
       }
       res.json(result.rows);
-      console.log("Chamou get convidados");
+      console.log("Chamou get convidados 1");
     });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.get("/convidados/:id", (req, res) => {
+  try {
+    client.query(
+      `SELECT * FROM convidados WHERE id = ${req.params.id}`,
+      function (err, result) {
+        if (err) {
+          return console.error("Erro ao buscar convidados:", err);
+        }
+        res.json(result.rows);
+        console.log("Chamou get convidados por id");
+      }
+    );
   } catch (error) {
     console.log(error);
   }
